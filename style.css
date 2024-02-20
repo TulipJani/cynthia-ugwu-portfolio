@@ -7,7 +7,7 @@
 
 @font-face {
     font-family: 'General Sans';
-    src: url(fonts/GeneralSans-Regular.otf) type('.otf');
+    src: url(fonts/GeneralSans-Regular.woff2);
 }
 
 html,
