@@ -1,22 +1,30 @@
 function loco() {
   gsap.registerPlugin(ScrollTrigger);
-
-  // Using Locomotive Scroll from Locomotive https://github.com/locomotivemtl/locomotive-scroll
-
   const locoScroll = new LocomotiveScroll({
     el: document.querySelector(".main"),
     smooth: true,
+    smoothMobile: true,
+    smartphone: {
+      smooth: true,
+    },
+    mobile: {
+      breakpoint: 0,
+      smooth: false,
+      getDirection: true,
+    },
+    tablet: {
+      breakpoint: 0,
+      smooth: false,
+      getDirection: true,
+    },
   });
-  // each time Locomotive Scroll updates, tell ScrollTrigger to update too (sync positioning)
   locoScroll.on("scroll", ScrollTrigger.update);
-
-  // tell ScrollTrigger to use these proxy methods for the ".main" element since Locomotive Scroll is hijacking things
   ScrollTrigger.scrollerProxy(".main", {
     scrollTop(value) {
       return arguments.length
         ? locoScroll.scrollTo(value, 0, 0)
         : locoScroll.scroll.instance.scroll.y;
-    }, // we don't have to define a scrollLeft because we're only scrolling vertically.
+    },
     getBoundingClientRect() {
       return {
         top: 0,
@@ -25,60 +33,55 @@ function loco() {
         height: window.innerHeight,
       };
     },
-    // LocomotiveScroll handles things completely differently on mobile devices - it doesn't even transform the container at all! So to get the correct behavior and avoid jitters, we should pin things with position: fixed on mobile. We sense it by checking to see if there's a transform applied to the container (the LocomotiveScroll-controlled element).
     pinType: document.querySelector(".main").style.transform
       ? "transform"
       : "fixed",
   });
-
-  // each time the window updates, we should refresh ScrollTrigger and then update LocomotiveScroll.
   ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
-
-  // after everything is set up, refresh() ScrollTrigger and update LocomotiveScroll because padding may have been added for pinning, etc.
   ScrollTrigger.refresh();
 }
 loco();
 
 var timeout;
+var tl = gsap.timeline();
 
-function squeezeAnimetion() {
-  var xScale = 1;
-  var yScale = 1;
+function loader() {
+  // Select progress bar and percentage elements
+  var prog = document.querySelector(".innerPrg");
+  var percent = document.querySelector("#center h6");
 
-  var xPrev = 0;
-  var yPrev = 0;
-  window.addEventListener("mousemove", function (dets) {
-    clearTimeout(timeout);
-    xScale = gsap.utils.clamp(0.75, 1.2, dets.clientX - xPrev);
-    yScale = gsap.utils.clamp(0.75, 1.2, dets.clientY - yPrev);
+  // Function to update progress bar and percentage
+  function updateProgress(i) {
+    prog.style.width = i + "%";
+    percent.textContent = i + "%";
+  }
 
-    xPrev = dets.clientX;
-    yPrev = dets.clientY;
-
-    crsrAnimation(xScale, yScale);
-
-    timeout = setTimeout(function () {
-      let crsr = document.querySelector(".crsr");
-      crsr.style.transform = `translate(${dets.clientX}px,${dets.clientY}px) scale(1,1)`;
-    }, 100);
-  });
+  // Start loading
+  function startLoading() {
+    var i = 0;
+    var timer = setInterval(() => {
+      updateProgress(i);
+      i++;
+      if (i > 100) {
+        clearInterval(timer);
+      }
+    }, 5);
+  }
+  setTimeout(startLoading, 1200);
 }
 
-function crsrAnimation(xScale, yScale) {
-  window.addEventListener("mousemove", function (dets) {
-    let crsr = document.querySelector(".crsr");
-    crsr.style.transform = `translate(${dets.clientX}px,${dets.clientY}px) scale(${xScale},${yScale})`;
+function heroTextAnimation() {
+  tl.to("#loader", {
+    top: "-100%",
+    duration: 0.5,
+    delay: 3,
   });
-}
-
-let heroTextAnimation = function () {
-  var tl = gsap.timeline();
-
   tl.from("nav", {
     y: "-100",
     opacity: 0,
     ease: Expo,
     duration: 1,
+    delay: 1,
   });
   tl.to(".boundingelem", {
     y: 0,
@@ -93,8 +96,24 @@ let heroTextAnimation = function () {
     ease: Expo.easeInOut,
     delay: -1,
   });
-};
+}
 
-crsrAnimation();
+function footerTime() {
+  function updateTime() {
+    var IST_time = new Date();
+
+    var hours = IST_time.getHours().toString().padStart(2, "0");
+    var minutes = IST_time.getMinutes().toString().padStart(2, "0");
+    var seconds = IST_time.getSeconds().toString().padStart(2, "0");
+
+    var timeElement = document.getElementById("IST-time");
+    timeElement.textContent = " IST: " + hours + ":" + minutes + ":" + seconds;
+  }
+
+  updateTime();
+  setInterval(updateTime, 1000);
+}
+
+loader();
 heroTextAnimation();
-squeezeAnimetion();
+footerTime();
