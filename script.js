@@ -72,7 +72,7 @@ function loader() {
 
 function heroTextAnimation() {
   tl.to("#loader", {
-    top: "-100%",
+    top: "-120%",
     duration: 0.5,
     delay: 3,
   });
